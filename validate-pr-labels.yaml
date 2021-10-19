@@ -2,8 +2,9 @@ name: Validate PR labels
 
 on:
   pull_request:
-    branches-ignore:
-      - master
+    branches:
+      - develop
+    types: [opened, labeled, unlabeled]
 
 permissions:
   pull-requests: read
