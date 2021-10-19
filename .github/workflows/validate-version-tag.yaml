@@ -1,0 +1,51 @@
+name: Validate version tag
+
+on:
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  validate-version-tag:
+    if: startsWith(github.head_ref, 'release/')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      # Fetch history (including tags) from within shallow clone.
+      - run: git fetch --prune --unshallow
+
+      - name: Get most recent git tag
+        id: most-recent-git-tag
+        run: |
+          echo "::set-output name=mostRecentGitTag::`echo $(git describe --abbrev=0)`"
+      - name: Get package.json
+        id: get-package-json
+        run: |
+          packageJson=`cat package.json`
+          # Below is required due to multi-line JSON.
+          packageJson="${packageJson//'%'/'%25'}"
+          packageJson="${packageJson//$'\n'/'%0A'}"
+          packageJson="${packageJson//$'\r'/'%0D'}"
+          echo "::set-output name=packageJson::$packageJson"
+      - name: Get version from package.json
+        id: get-version
+        run: |
+          echo ::set-output name=version::"${{ fromJson(steps.get-package-json.outputs.packageJson).version }}"
+      - name: Validate version format
+        run: |
+          if ! [[ ${{ steps.get-version.outputs.version }} =~ ^[0-9]+\.[0-9]+\.[0-9]+($|-[0-9]+) ]]; then
+            echo "'version' field in package.json not in the format '#.#.#' or '#.#.#-#'." && exit 1
+          fi
+      - name: Validate version git tag
+        run: |
+          if [[ ${{ steps.most-recent-git-tag.outputs.mostRecentGitTag }} != v${{ steps.get-version.outputs.version }} ]]; then
+            echo "Most recent git tag must == 'v$version'." && exit 1
+          fi
+        env:
+          version: ${{ steps.get-version.outputs.version }}

@@ -1,0 +1,38 @@
+name: Node.js CI
+
+on:
+  pull_request:
+
+env:
+  SSH_PRIVATE_KEY: ${{ secrets.HEDIA_BOT_PRIVATE_SSH_KEY }}
+  NPM_TOKEN: ${{ secrets.HEDIA_BOT_NPM_TOKEN }}
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.15] #[8.x, 10.x, 12.x]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1.4.4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Register ssh keys
+        uses: webfactory/ssh-agent@v0.4.1
+        with:
+          ssh-private-key: |
+            ${{ env.SSH_PRIVATE_KEY }}
+      - name: Register NPM access token
+        run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
+        env:
+          NPM_TOKEN: ${{ env.NPM_TOKEN }}
+
+      - run: npm ci --ignore-scripts
+      - run: npm run prettier-check
+      - run: npm run tslint
+      - run: npm run tsc

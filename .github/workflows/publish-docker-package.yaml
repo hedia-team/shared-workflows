@@ -1,0 +1,26 @@
+name: Publish Docker Package
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [closed]
+
+permissions:
+  pull-requests: read
+  contents: write
+
+jobs:
+  publish-docker-package:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14.15
+      - name: Publish package
+        uses: hedia-team/publish-service-package@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.HEDIA_BOT_GITHUB_ACCESS_PACKAGES_TOKEN  }}
+          NPM_TOKEN: ${{secrets.HEDIA_BOT_NPM_TOKEN}}

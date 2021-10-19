@@ -1,0 +1,46 @@
+name: Create release
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [closed]
+
+permissions:
+  pull-requests: read
+  contents: write
+
+jobs:
+  create-release:
+    if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      # Fetch history (including tags) from within shallow clone.
+      - run: git fetch --prune --unshallow
+
+      - name: Get most recent git tag
+        id: most-recent-git-tag
+        run: |
+          echo "::set-output name=mostRecentGitTag::`echo $(git describe --abbrev=0)`"
+
+      - name: Create release changelog
+        id: create-release-changelog
+        uses: mikepenz/release-changelog-builder-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Uncomment if release notes should be edited before release creation.
+        # with:
+        #   outputFile: .github/release-notes.md
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.most-recent-git-tag.outputs.mostRecentGitTag }}
+          body: ${{ steps.create-release-changelog.outputs.changelog }}
+          # Uncomment if release notes should be edited before release creation.
+          # body_path: .github/release-notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,19 @@
+name: Validate PR title
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  pull-requests: read
+
+jobs:
+  validate-pr-title:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate PR title
+        uses: deepakputhraya/action-pr-title@master
+        with:
+          regex: "^(((\\[\\d+\\.\\d+\\.\\d+\\])|(\\[Anytime\\]))\\s-\\s)?HDA-\\d+.*"
