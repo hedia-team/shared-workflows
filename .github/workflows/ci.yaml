@@ -5,8 +5,6 @@ on:
     secrets:
       NPM_TOKEN:
         required: true
-      SSH_PRIVATE_KEY:
-        required: true
 
 jobs:
   build:
@@ -22,11 +20,6 @@ jobs:
         uses: actions/setup-node@v1.4.4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Register ssh keys
-        uses: webfactory/ssh-agent@v0.4.1
-        with:
-          ssh-private-key: |
-            ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Register NPM access token
         run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
         env:
