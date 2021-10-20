@@ -1,13 +1,12 @@
 name: Node.js CI
 
-workflow_run:
-  workflows: ["Submodules Sync"]
-  types:
-    - completed
-
-env:
-  SSH_PRIVATE_KEY: ${{ secrets.HEDIA_BOT_PRIVATE_SSH_KEY }}
-  NPM_TOKEN: ${{ secrets.HEDIA_BOT_NPM_TOKEN }}
+on:
+  workflow_call:
+    secrets:
+      NPM_TOKEN:
+        required: true
+      SSH_PRIVATE_KEY:
+        required: true
 
 jobs:
   build:
@@ -27,12 +26,11 @@ jobs:
         uses: webfactory/ssh-agent@v0.4.1
         with:
           ssh-private-key: |
-            ${{ env.SSH_PRIVATE_KEY }}
+            ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Register NPM access token
         run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
         env:
-          NPM_TOKEN: ${{ env.NPM_TOKEN }}
-
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: npm ci --ignore-scripts
       - run: npm run prettier-check
       - run: npm run tslint
