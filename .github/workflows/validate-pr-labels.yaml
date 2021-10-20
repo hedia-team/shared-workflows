@@ -1,10 +1,10 @@
 name: Validate PR labels
 
 on:
-  pull_request:
-    branches:
-      - develop
-    types: [opened, labeled, unlabeled]
+  workflow_call:
+    secrets:
+      GITHUB_TOKEN:
+        required: true
 
 permissions:
   pull-requests: read
