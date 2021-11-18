@@ -14,9 +14,9 @@ on:
         required: false
         default: "worker"
 
-permissions:
-  pull-requests: read
-  contents: write
+# permissions:
+#   pull-requests: read
+#   contents: write
 
 jobs:
   publish-docker-package:
