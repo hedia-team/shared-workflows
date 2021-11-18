@@ -73,11 +73,9 @@ jobs:
             ghcr.io/hedia-team/${{ github.event.repository.name }}:latest
             ghcr.io/hedia-team/${{ github.event.repository.name }}:${{ steps.package-version.outputs.version }}
             registry.heroku.com/${{ github.event.repository.name }}-staging/${{ inputs.dyno-type }}
-      # - name: Deploy to staging
-      #   id: deploy-to-staging
-      #   run: |
-      #     appID=${{ github.event.repository.name }}-staging
-      #     echo $appID
-      #     #heroku apps:info $appID
-      #   env:
-      #     HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      - name: Deploy to staging
+        run: |
+          appID=${{ github.event.repository.name }}-staging
+          heroku container:release ${{ inputs.dyno-type }} -a $appID
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
