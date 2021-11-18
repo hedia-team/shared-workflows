@@ -1,4 +1,8 @@
 name: Publish and deploy Docker Package
+# Publish docker image to ghcr.io and Heroku registry,
+# and deploys container to Heroku app.
+# Assumes that a Heroku app named {repository}-staging exists,
+# and which the provided Heroku API key have access to.
 
 on:
   workflow_call:
