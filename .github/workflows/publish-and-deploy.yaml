@@ -1,4 +1,4 @@
-name: Publish Docker Package
+name: Publish and deploy Docker Package
 
 on:
   workflow_call:
@@ -14,9 +14,10 @@ on:
         required: false
         default: "worker"
 
-# permissions:
-#   pull-requests: read
-#   contents: write
+permissions:
+  pull-requests: read
+  contents: write
+  packages: write
 
 jobs:
   publish-docker-package:
