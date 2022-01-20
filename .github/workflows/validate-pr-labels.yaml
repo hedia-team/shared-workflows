@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Validate PR labels
-        uses: docker://agilepathway/pull-request-label-checker:v1.0.102
+        uses: docker://agilepathway/pull-request-label-checker:latest
         with:
           any_of: feature,feat,fix,test
           repo_token: ${{ secrets.GITHUB_TOKEN }}

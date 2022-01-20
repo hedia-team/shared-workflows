@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  workflow_call:
+    secrets:
+      NPM_TOKEN:
+        required: true
+
+jobs:
+  # Determine if the following CI steps should be skipped due to autobump commit
+  should-skip:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.ci-skip.outputs.ci-skip }}
+      
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '1000'
+
+      - name: Should skip CI
+        id: ci-skip
+        uses: mstachniuk/ci-skip@v1
+        with:
+          commit-filter: 'autobump'
+
+  # PR label validation
+  validate-pr-labels:
+    needs: [should-skip]
+    runs-on: ubuntu-latest
+    if: ${{ needs.should-skip.outputs.skip == 'false' }}
+
+    steps:
+      - name: Validate PR labels
+        uses: docker://agilepathway/pull-request-label-checker:latest
+        with:
+          one_of: major,minor,patch
+          repo_token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
+
+  # Run tests & linting scripts
+  lint-and-test:
+    needs: [validate-pr-labels]
+    runs-on: ubuntu-latest
+    if: ${{ needs.should-skip.outputs.skip == 'false' }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'npm'
+
+      - name: Set NPM access token
+        run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
+        env:
+          NPM_TOKEN: ${{ env.NPM_TOKEN }}
+
+      - run: npm ci --ignore-scripts
+      - run: npm run pkg-json-lint
+      - run: npm run prettier
+      - run: npm run tslint
+      - run: npm run tsc
+      - run: npm run test
+      
+  # Bump version (if needed) & publish alpha package 
+  version-bump-publish-alpha:
+    needs: [lint-and-test]
+    runs-on: ubuntu-latest
+    if: ${{ needs.should-skip.outputs.skip == 'false' }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
+
+      - name: Autobump & Publish
+        uses: hedia-team/autobump-and-publish@master
+        with:
+          github-token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
+          npm-token: ${{ env.NPM_TOKEN }}
+          git-name: 'hedia-bot'
+          label: ${{ toJson(github.event.pull_request.labels.*.name) }} ## Defines type of version bump
+          issue-number: ${{ github.event.number }} ## So that publish comment can be written on PR
