@@ -28,8 +28,7 @@ jobs:
   lint-and-test:
     needs: [should-skip-remaining-jobs]
     runs-on: ubuntu-latest
-    # if: ${{ needs.should-skip-remaining-jobs.outputs.skip == 'false' }}
-    if: ${{ env.CI_SKIP == 'false' }}
+    if: ${{ needs.should-skip-remaining-jobs.outputs.skip == 'false' }}
 
     steps:
       - uses: actions/checkout@v2
@@ -56,8 +55,7 @@ jobs:
   # version-bump-publish-alpha:
   #   needs: [lint-and-test]
   #   runs-on: ubuntu-latest
-  #   # if: ${{ needs.should-skip-remaining-jobs.outputs.skip == 'false' }}
-  #   if: ${{ env.CI_SKIP == 'false' }}
+  #   if: ${{ needs.should-skip-remaining-jobs.outputs.skip == 'false' }}
 
   #   steps:
   #     - uses: actions/checkout@v2
