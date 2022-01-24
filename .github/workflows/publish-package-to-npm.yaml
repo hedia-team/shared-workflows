@@ -1,0 +1,33 @@
+name: Publish package to npm
+
+on:
+  workflow_call:
+    secrets:
+      NPM_TOKEN:
+        required: true
+      HEDIA_BOT_GITHUB_PAT:
+        required: true
+
+jobs:
+  release-package:
+    if: github.event.pull_request.merged == true
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'npm'
+
+      - name: Publish
+        uses: hedia-team/autobump-and-publish@master
+        with:
+          github-token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+          git-name: 'hedia-bot'
+          issue-number: ${{ github.event.number }}
+          is-post-merge: true
