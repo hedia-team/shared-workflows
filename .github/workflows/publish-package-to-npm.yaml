@@ -23,7 +23,7 @@ jobs:
           node-version: '16'
           cache: 'npm'
 
-      - name: Publish
+      - name: Publish package to npm
         uses: hedia-team/autobump-and-publish@master
         with:
           github-token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
