@@ -5,6 +5,8 @@ on:
     secrets:
       NPM_TOKEN:
         required: true
+      HEDIA_BOT_GITHUB_PAT:
+        required: true
 
 jobs:
   # Determine if the following CI steps should be skipped due to autobump commit.
