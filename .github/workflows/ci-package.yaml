@@ -44,7 +44,7 @@ jobs:
       - name: Set NPM access token
         run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
         env:
-          NPM_TOKEN: ${{ env.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - run: npm ci --ignore-scripts
       - run: npm run pkg-json-lint
@@ -54,7 +54,7 @@ jobs:
       - run: npm run test
       
   # Bump version (if needed) & publish alpha package.
-  version-bump-publish-alpha:
+  version-bump-and-publish-alpha:
     needs: [lint-and-test]
     runs-on: ubuntu-latest
     if: ${{ needs.should-skip-remaining-jobs.outputs.skip == 'false' }}
@@ -63,13 +63,13 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-          token: ${{ env.HEDIA_BOT_GITHUB_PAT }}
+          token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
 
       - name: Autobump & Publish
         uses: hedia-team/autobump-and-publish@master
         with:
-          github-token: ${{ env.HEDIA_BOT_GITHUB_PAT }}
-          npm-token: ${{ env.NPM_TOKEN }}
+          github-token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
           git-name: 'hedia-bot'
           label: ${{ toJson(github.event.pull_request.labels.*.name) }} ## Defines type of version bump
           issue-number: ${{ github.event.number }} ## So that publish comment can be written on PR
