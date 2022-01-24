@@ -61,12 +61,12 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-          token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
+          token: ${{ env.HEDIA_BOT_GITHUB_PAT }}
 
       - name: Autobump & Publish
         uses: hedia-team/autobump-and-publish@master
         with:
-          github-token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
+          github-token: ${{ env.HEDIA_BOT_GITHUB_PAT }}
           npm-token: ${{ env.NPM_TOKEN }}
           git-name: 'hedia-bot'
           label: ${{ toJson(github.event.pull_request.labels.*.name) }} ## Defines type of version bump
