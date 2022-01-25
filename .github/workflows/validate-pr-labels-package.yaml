@@ -9,7 +9,6 @@ permissions:
 jobs:
   validate-pr-labels:
     runs-on: ubuntu-latest
-
     steps:
       - name: Validate PR labels
         uses: docker://agilepathway/pull-request-label-checker:latest

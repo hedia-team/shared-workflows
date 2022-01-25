@@ -10,8 +10,19 @@ on:
 
 jobs:
 
+  # Is correct label set
+  validate-pr-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR labels
+        uses: docker://agilepathway/pull-request-label-checker:latest
+        with:
+          one_of: major,minor,patch
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
   # Determine if the following CI steps should be skipped due to autobump commit.
   should-skip-remaining-jobs:
+    needs: [validate-pr-labels]
     runs-on: ubuntu-latest
     outputs:
       skip: ${{ steps.ci-skip.outputs.ci-skip }}
