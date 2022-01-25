@@ -72,5 +72,5 @@ jobs:
           github-token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
           npm-token: ${{ secrets.NPM_TOKEN }}
           git-name: 'hedia-bot'
-          label: ${{ toJson(github.event.label.name) }} ## Defines type of version bump.
+          label: ${{ github.event.label.name }} ## Defines type of version bump.
           issue-number: ${{ github.event.number }} ## So that publish comment can be written on PR.
