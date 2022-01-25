@@ -9,7 +9,7 @@ on:
         required: true
 
 jobs:
-  version-bump-and-publish:
+  bump-version-and-publish:
     if: github.event.pull_request.merged == true
 
     runs-on: ubuntu-latest

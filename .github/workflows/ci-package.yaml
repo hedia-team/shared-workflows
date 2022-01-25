@@ -54,7 +54,7 @@ jobs:
       - run: npm run test
       
   # Bump version (if needed) & publish alpha package.
-  version-bump-and-publish-alpha:
+  bump-version-and-publish-alpha:
     needs: [lint-and-test]
     runs-on: ubuntu-latest
     if: ${{ needs.should-skip-remaining-jobs.outputs.skip == 'false' }}
