@@ -10,8 +10,19 @@ on:
 
 jobs:
 
+  # Is correct label set
+  validate-pr-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR labels
+        uses: docker://agilepathway/pull-request-label-checker:latest
+        with:
+          one_of: major,minor,patch
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
   # Determine if the following CI steps should be skipped due to autobump commit.
   should-skip-remaining-jobs:
+    needs: [validate-pr-labels]
     runs-on: ubuntu-latest
     outputs:
       skip: ${{ steps.ci-skip.outputs.ci-skip }}
@@ -72,5 +83,5 @@ jobs:
           github-token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
           npm-token: ${{ secrets.NPM_TOKEN }}
           git-name: 'hedia-bot'
-          label: ${{ github.event.label.name }} ## Defines type of version bump.
+          label: ${{ toJson(github.event.pull_request.labels.*.name) }} ## Defines type of version bump.
           issue-number: ${{ github.event.number }} ## So that publish comment can be written on PR.
