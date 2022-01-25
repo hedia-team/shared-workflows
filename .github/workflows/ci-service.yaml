@@ -10,21 +10,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [16.3]
-
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1.4.4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node-version }}
-      - name: Register NPM access token
+          node-version: '16.13.2'
+          cache: 'npm'
+
+      - name: Set NPM access token
         run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - run: npm ci --ignore-scripts
+      - run: npm run pkg-json-lint
       - run: npm run prettier
       - run: npm run tslint
       - run: npm run tsc
