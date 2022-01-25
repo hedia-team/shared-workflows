@@ -18,7 +18,7 @@ jobs:
         uses: lewagon/wait-on-check-action@v1.1.1
         with:
           ref: ${{ github.ref }}
-          check-name: 'Validate PR labels'
+          check-name: 'test2'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   # Determine if the following CI steps should be skipped due to autobump commit.
