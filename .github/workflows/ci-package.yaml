@@ -9,6 +9,18 @@ on:
         required: true
 
 jobs:
+
+  # Checks if label is set in order for run the workflow
+  is-label-set:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for tests to succeed
+        uses: lewagon/wait-on-check-action@v1.1.1
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'Validate PR labels'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
   # Determine if the following CI steps should be skipped due to autobump commit.
   should-skip-remaining-jobs:
     runs-on: ubuntu-latest
@@ -24,7 +36,7 @@ jobs:
         id: ci-skip
         uses: mstachniuk/ci-skip@v1
         with:
-          commit-filter: 'autobump'
+          commit-filter: 'autobump'        
 
   # Run linting and tests.
   lint-and-test:
