@@ -1,4 +1,4 @@
-name: Validate PR labels
+name: test1
 
 on:
   workflow_call:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Validate PR labels
+      - name: test2
         uses: docker://agilepathway/pull-request-label-checker:latest
         with:
           any_of: feature,feat,fix,test
