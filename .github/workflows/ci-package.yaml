@@ -10,17 +10,6 @@ on:
 
 jobs:
 
-  # Checks if label is set in order for run the workflow
-  is-label-set:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Wait for tests to succeed
-        uses: lewagon/wait-on-check-action@v1.1.1
-        with:
-          ref: ${{ github.ref }}
-          check-name: 'test2'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
   # Determine if the following CI steps should be skipped due to autobump commit.
   should-skip-remaining-jobs:
     runs-on: ubuntu-latest
