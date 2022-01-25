@@ -72,22 +72,12 @@ jobs:
     if: ${{ needs.should-skip-remaining-jobs.outputs.skip == 'false' }}
 
     steps:
-      - name: Wait for build to succeed
-        uses: fountainhead/action-wait-for-check@v1.0.0
-        id: wait-for-build
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: 'Validate PR labels'
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-
       - uses: actions/checkout@v2
-        if: steps.wait-for-build.outputs.conclusion == 'success'
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
 
       - name: Bump version and publish alpha package to npm
-        if: steps.wait-for-build.outputs.conclusion == 'success'
         uses: hedia-team/autobump-and-publish@master
         with:
           github-token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
