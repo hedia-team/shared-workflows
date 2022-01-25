@@ -1,4 +1,4 @@
-name: Publish and deploy Docker Package
+name: Publish and deploy Docker container
 # Publish docker image to ghcr.io and Heroku registry,
 # and deploys container to Heroku app.
 # Assumes that a Heroku app named {repository}-staging exists,
@@ -16,7 +16,7 @@ on:
         type: string
         description: Heroku dyno type (web or worker)
         required: false
-        default: "worker"
+        default: 'worker'
 
 permissions:
   pull-requests: read
@@ -24,36 +24,42 @@ permissions:
   packages: write
 
 jobs:
-  publish-docker-package:
+  publish-and-deploy-docker-container:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      
       - name: Debug
         run: |
           echo ${{ github.event.repository.name }}
           echo ${{ inputs.dyno-type }}
+      
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+      
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
+      
       - name: Login to Heroku registry
         uses: docker/login-action@v1
         with:
           registry: registry.heroku.com
           username: _
           password: ${{ secrets.HEROKU_API_KEY }}
+      
       - name: Extract package version
         id: package-version
         run: |
           initialPackageJSON="$(sed -nE 's/^\s*"version": "([0-9]+.[0-9]+.[0-9]+).*?",$/\1/p' package.json)"
           echo ::set-output name=version::"$initialPackageJSON"
         shell: bash
+      
       - name: Create tag
         uses: actions/github-script@v3
         with:
@@ -65,6 +71,7 @@ jobs:
               ref: "refs/tags/v${{ steps.package-version.outputs.version }}",
               sha: context.sha
             })
+      
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
@@ -77,6 +84,7 @@ jobs:
             ghcr.io/hedia-team/${{ github.event.repository.name }}:latest
             ghcr.io/hedia-team/${{ github.event.repository.name }}:${{ steps.package-version.outputs.version }}
             registry.heroku.com/${{ github.event.repository.name }}-staging/${{ inputs.dyno-type }}
+      
       - name: Deploy to staging
         run: |
           appID=${{ github.event.repository.name }}-staging
