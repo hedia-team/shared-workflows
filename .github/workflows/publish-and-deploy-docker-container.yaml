@@ -18,18 +18,17 @@ on:
         required: false
         default: 'worker'
 
-permissions:
-  pull-requests: read
-  contents: write
-  packages: write
+# permissions:
+#   pull-requests: read
+#   contents: write
+#   packages: write
 
 jobs:
   publish-and-deploy-docker-container:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       
       - name: Debug
         run: |

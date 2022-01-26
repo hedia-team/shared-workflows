@@ -2,13 +2,10 @@ name: Create release
 
 on:
   workflow_call:
-    secrets:
-      GITHUB_TOKEN:
-        required: true
 
-permissions:
-  pull-requests: read
-  contents: write
+# permissions:
+#   pull-requests: read
+#   contents: write
 
 jobs:
   create-release:

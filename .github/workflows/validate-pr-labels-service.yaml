@@ -3,8 +3,8 @@ name: Validate PR labels
 on:
   workflow_call:
 
-permissions:
-  pull-requests: read
+# permissions:
+#   pull-requests: read
 
 jobs:
   validate-pr-labels:
