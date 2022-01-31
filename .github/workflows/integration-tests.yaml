@@ -2,12 +2,22 @@ name: Integration tests
 
 on:
   workflow_call:
+    inputs:
+      DB:
+        required: true
+        type: string
     secrets:
-      NPM_TOKEN:
+      HEDIA_BOT_NPM_TOKEN:
+        required: true
+      GIT_CRYPT_KEY:
         required: true
 
+permissions:
+  pull-requests: read
+  contents: read
+
 jobs:
-  build:
+  run-integration-tests:
     runs-on: ubuntu-latest
 
     services:
@@ -24,9 +34,8 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
-          POSTGRES_DB: logbooks
+          POSTGRES_DB: ${{ inputs.DB }}
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -43,13 +52,16 @@ jobs:
           node-version: '16.13.2'
           cache: 'npm'
       
-      - name: Set NPM access token
-        run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
-        env:
-          NPM_TOKEN: ${{ secrets.HEDIA_BOT_NPM_TOKEN }}
+      - name: Set npm access token
+        run: npm config set '//registry.npmjs.org/:_authToken' ${{ secrets.HEDIA_BOT_NPM_TOKEN }}
       
+      - name: Decrypt config
+        uses: sliteteam/github-action-git-crypt-unlock@1.1.0
+        env:
+          GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
+
       - run: npm ci
-      - run: npm run migration:run
-      - run: npm run start:test
-      - run: npm run integration-tests
-      - run: npm run stop:test
+      # - run: npm run migration:run-dev
+      # - run: npm run start:test
+      # - run: npm run integration-tests
+      # - run: npm run stop:test

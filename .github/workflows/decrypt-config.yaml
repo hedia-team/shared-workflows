@@ -1,0 +1,22 @@
+name: Decrypt config
+
+on:
+  workflow_call:
+    secrets:
+      GIT_CRYPT_KEY:
+        required: true
+
+permissions:
+  pull-requests: read
+
+jobs:
+  decrypt-config:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Decrypt config
+        uses: sliteteam/github-action-git-crypt-unlock@1.1.0
+        env:
+          GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}

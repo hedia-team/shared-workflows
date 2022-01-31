@@ -3,8 +3,8 @@ name: Validate PR title
 on:
   workflow_call:
 
-# permissions:
-#   pull-requests: read
+permissions:
+  pull-requests: read
 
 jobs:
   validate-pr-title:

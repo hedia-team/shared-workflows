@@ -3,11 +3,17 @@ name: CI
 on:
   workflow_call:
     secrets:
-      NPM_TOKEN:
+      HEDIA_BOT_NPM_TOKEN:
+        required: true
+      GIT_CRYPT_KEY:
         required: true
 
+permissions:
+  pull-requests: read
+  contents: read
+
 jobs:
-  build:
+  lint-build-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,10 +24,13 @@ jobs:
           node-version: '16.13.2'
           cache: 'npm'
 
-      - name: Set NPM access token
-        run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
+      - name: Set npm access token
+        run: npm config set '//registry.npmjs.org/:_authToken' ${{ secrets.HEDIA_BOT_NPM_TOKEN }}
+
+      - name: Decrypt config
+        uses: sliteteam/github-action-git-crypt-unlock@1.1.0
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
 
       - run: npm ci --ignore-scripts
       - run: npm run pkg-json-lint

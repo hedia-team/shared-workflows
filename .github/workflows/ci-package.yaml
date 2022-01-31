@@ -3,10 +3,14 @@ name: CI
 on:
   workflow_call:
     secrets:
-      NPM_TOKEN:
+      HEDIA_BOT_NPM_TOKEN:
         required: true
       HEDIA_BOT_GITHUB_PAT:
         required: true
+
+permissions:
+  pull-requests: read
+  contents: read
 
 jobs:
   # Verify required label is set.
@@ -38,8 +42,8 @@ jobs:
         with:
           commit-filter: 'autobump'        
 
-  # Run linting and tests.
-  lint-and-test:
+  # Run linting, build, and tests.
+  lint-build-test:
     needs: [should-skip-remaining-jobs]
     if: ${{ needs.should-skip-remaining-jobs.outputs.skip == 'false' }}
     runs-on: ubuntu-latest
@@ -52,10 +56,8 @@ jobs:
           node-version: '16.13.2'
           cache: 'npm'
 
-      - name: Set NPM access token
-        run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Set npm access token
+        run: npm config set '//registry.npmjs.org/:_authToken'  ${{ secrets.HEDIA_BOT_NPM_TOKEN }}
 
       - run: npm ci --ignore-scripts
       - run: npm run pkg-json-lint
@@ -66,7 +68,7 @@ jobs:
       
   # Bump version (if needed) & publish alpha package.
   bump-version-and-publish-alpha:
-    needs: [lint-and-test]
+    needs: [lint-build-test]
     if: ${{ needs.should-skip-remaining-jobs.outputs.skip == 'false' }}
     runs-on: ubuntu-latest
 
@@ -80,7 +82,7 @@ jobs:
         uses: hedia-team/autobump-and-publish@master
         with:
           github-token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
+          npm-token: ${{ secrets.HEDIA_BOT_NPM_TOKEN }}
           git-name: 'hedia-bot'
           label: ${{ toJson(github.event.pull_request.labels.*.name) }} ## Defines type of version bump.
           issue-number: ${{ github.event.number }} ## So that publish comment can be written on PR.

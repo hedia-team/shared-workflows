@@ -3,14 +3,12 @@ name: Create release
 on:
   workflow_call:
 
-# permissions:
-#   pull-requests: read
-#   contents: write
+permissions:
+  pull-requests: read
+  contents: write
 
 jobs:
   create-release:
-    if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
-
     runs-on: ubuntu-latest
 
     steps:

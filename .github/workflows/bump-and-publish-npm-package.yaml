@@ -3,11 +3,14 @@ name: Bump version and publish package to npm
 on:
   workflow_call:
     secrets:
-      NPM_TOKEN:
+      HEDIA_BOT_NPM_TOKEN:
         required: true
       HEDIA_BOT_GITHUB_PAT:
         required: true
 
+permissions:
+  pull-requests: read
+  
 jobs:
   bump-version-and-publish:
     if: github.event.pull_request.merged == true
@@ -21,7 +24,7 @@ jobs:
         uses: hedia-team/autobump-and-publish@master
         with:
           github-token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
+          npm-token: ${{ secrets.HEDIA_BOT_NPM_TOKEN }}
           git-name: 'hedia-bot'
           issue-number: ${{ github.event.number }}
           is-post-merge: true

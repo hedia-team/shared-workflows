@@ -6,22 +6,22 @@ name: Publish and deploy Docker container
 
 on:
   workflow_call:
-    secrets:
-      NPM_TOKEN:
-        required: true
-      HEROKU_API_KEY:
-        required: true
     inputs:
       dyno-type:
         type: string
         description: Heroku dyno type (web or worker)
         required: false
         default: 'worker'
+    secrets:
+      HEDIA_BOT_NPM_TOKEN:
+        required: true
+      HEROKU_API_KEY:
+        required: true
 
-# permissions:
-#   pull-requests: read
-#   contents: write
-#   packages: write
+permissions:
+  pull-requests: read
+  contents: write
+  packages: write
 
 jobs:
   publish-and-deploy-docker-container:
@@ -75,7 +75,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           build-args: |
-            NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+            NPM_TOKEN=${{ secrets.HEDIA_BOT_NPM_TOKEN }}
             BUILD_VERSION=${{ steps.package-version.outputs.version }}
           context: .
           push: true
