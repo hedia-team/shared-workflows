@@ -77,6 +77,8 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
 
+      - run: npm run tsc
+
       - name: Bump version and publish alpha package to npm
         uses: hedia-team/autobump-and-publish@master
         with:

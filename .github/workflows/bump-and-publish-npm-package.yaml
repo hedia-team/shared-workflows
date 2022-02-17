@@ -17,6 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - run: npm run tsc
+
       - name: Bump version and publish package to npm
         uses: hedia-team/autobump-and-publish@master
         with:
