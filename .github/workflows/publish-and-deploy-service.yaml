@@ -83,7 +83,7 @@ jobs:
           tags: |
             ghcr.io/hedia-team/${{ github.event.repository.name }}:latest
             ghcr.io/hedia-team/${{ github.event.repository.name }}:${{ steps.package-version.outputs.version }}
-            registry.heroku.com/${{ github.event.repository.name }}-staging/${{ inputs.dyno-type }}
+            registry.heroku.com/hedia-${{ github.event.repository.name }}-staging/${{ inputs.dyno-type }}
 
       - name: Deploy to staging
         run: |
