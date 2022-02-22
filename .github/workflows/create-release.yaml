@@ -2,9 +2,6 @@ name: Create release
 
 on:
   workflow_call:
-    secrets:
-      GITHUB_TOKEN:
-        required: true
 
 permissions:
   pull-requests: read
@@ -30,7 +27,7 @@ jobs:
         id: create-release-changelog
         uses: mikepenz/release-changelog-builder-action@v2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         # Uncomment if release notes should be edited before release creation.
         # with:
         #   outputFile: .github/release-notes.md
@@ -43,4 +40,4 @@ jobs:
           # Uncomment if release notes should be edited before release creation.
           # body_path: .github/release-notes.md
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
