@@ -7,7 +7,7 @@ on:
         required: true
         type: string
     secrets:
-      HEDIA_BOT_NPM_TOKEN:
+      NPM_TOKEN:
         required: true
       GIT_CRYPT_KEY:
         required: true
@@ -15,6 +15,9 @@ on:
 permissions:
   pull-requests: read
   contents: read
+
+env:
+  NODE_VERSION: '16.13.2'
 
 jobs:
   run-integration-tests:
@@ -46,22 +49,23 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16.13.2'
-          cache: 'npm'
-      
-      - name: Set npm access token
-        run: npm config set '//registry.npmjs.org/:_authToken' ${{ secrets.HEDIA_BOT_NPM_TOKEN }}
       
       - name: Decrypt config
         uses: sliteteam/github-action-git-crypt-unlock@1.1.0
         env:
           GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
 
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Set npm access token
+        run: npm config set '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
+
       - run: npm ci
-      # - run: npm run migration:run-dev
-      # - run: npm run start:test
-      # - run: npm run integration-tests
-      # - run: npm run stop:test
+      - run: npm run migration:run-dev
+      - run: npm run build
+      - run: npm run start:pm2
+      - run: npm run integration-tests
+      - run: npm run stop:pm2

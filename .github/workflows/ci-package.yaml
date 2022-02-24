@@ -3,30 +3,21 @@ name: CI
 on:
   workflow_call:
     secrets:
-      HEDIA_BOT_NPM_TOKEN:
+      NPM_TOKEN:
         required: true
-      HEDIA_BOT_GITHUB_PAT:
+      GITHUB_PAT:
         required: true
 
 permissions:
   pull-requests: read
   contents: read
 
+env:
+  NODE_VERSION: '16.13.2'
+
 jobs:
-  # Verify required label is set.
-  validate-pr-labels:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Validate PR labels
-        uses: docker://agilepathway/pull-request-label-checker:latest
-        with:
-          one_of: major,minor,patch
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-
   # Determine if the following CI steps should be skipped due to autobump commit.
   should-skip-remaining-jobs:
-    needs: [validate-pr-labels]
     runs-on: ubuntu-latest
     outputs:
       skip: ${{ steps.ci-skip.outputs.ci-skip }}
@@ -40,11 +31,25 @@ jobs:
         id: ci-skip
         uses: mstachniuk/ci-skip@v1
         with:
-          commit-filter: 'autobump'        
+          commit-filter: 'Version autobumped to'
 
+  # Verify required labels are set.
+  validate-pr-labels:
+    needs: [should-skip-remaining-jobs]
+    if: ${{ needs.should-skip-remaining-jobs.outputs.skip == 'false' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate PR labels
+        uses: docker://agilepathway/pull-request-label-checker:latest
+        with:
+          any_of: feature,fix,test
+          one_of: major,minor,patch
+          repo_token: ${{ github.token }}
+  
   # Run linting, build, and tests.
   lint-build-test:
-    needs: [should-skip-remaining-jobs]
+    needs: [validate-pr-labels]
     if: ${{ needs.should-skip-remaining-jobs.outputs.skip == 'false' }}
     runs-on: ubuntu-latest
 
@@ -53,16 +58,17 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: '16.13.2'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Set npm access token
-        run: npm config set '//registry.npmjs.org/:_authToken'  ${{ secrets.HEDIA_BOT_NPM_TOKEN }}
+        run: npm config set '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
 
       - run: npm ci --ignore-scripts
       - run: npm run pkg-json-lint
+      - run: npm run package-audit
       - run: npm run prettier
-      - run: npm run tslint
+      - run: npm run lint
       - run: npm run tsc
       - run: npm run test
       
@@ -76,13 +82,13 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-          token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
+          token: ${{ secrets.GITHUB_PAT }}
 
       - name: Bump version and publish alpha package to npm
         uses: hedia-team/autobump-and-publish@master
         with:
-          github-token: ${{ secrets.HEDIA_BOT_GITHUB_PAT }}
-          npm-token: ${{ secrets.HEDIA_BOT_NPM_TOKEN }}
-          git-name: 'hedia-bot'
-          label: ${{ toJson(github.event.pull_request.labels.*.name) }} ## Defines type of version bump.
-          issue-number: ${{ github.event.number }} ## So that publish comment can be written on PR.
+          github-token: ${{ secrets.GITHUB_PAT }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+          node-version: ${{ env.NODE_VERSION }}
+          label: ${{ toJson(github.event.pull_request.labels.*.name) }}
+          issue-number: ${{ github.event.number }}

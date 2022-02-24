@@ -14,5 +14,5 @@ jobs:
       - name: Validate PR labels
         uses: docker://agilepathway/pull-request-label-checker:latest
         with:
-          any_of: feature,feat,fix,test
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          any_of: feature,fix,test
+          repo_token: ${{ github.token }}

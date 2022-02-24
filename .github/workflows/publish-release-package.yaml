@@ -1,0 +1,33 @@
+name: Publish release version of package on npm
+
+on:
+  workflow_call:
+    secrets:
+      NPM_TOKEN:
+        required: true
+      GITHUB_PAT:
+        required: true
+
+permissions:
+  pull-requests: read
+
+env:
+  NODE_VERSION: '16.13.2'
+
+jobs:
+  publish-release-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_PAT }}
+
+      - name: Publish release version of package on npm
+        uses: hedia-team/autobump-and-publish@master
+        with:
+          github-token: ${{ secrets.GITHUB_PAT }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+          node-version: ${{ env.NODE_VERSION }}
+          issue-number: ${{ github.event.number }}
+          is-post-merge: 'true'

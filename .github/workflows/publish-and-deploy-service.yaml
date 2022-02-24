@@ -1,21 +1,21 @@
-name: Publish and deploy Docker container
-# Publish docker image to ghcr.io and Heroku registry,
-# and deploys container to Heroku app.
-# Assumes that a Heroku app named {repository}-staging exists,
-# and which the provided Heroku API key have access to.
+name: Publish and deploy service
+# Publishes Docker image to ghcr.io and Heroku Container Registry and deploys container to Heroku app.
+# Assumes that a Heroku app named '{repository}-staging' exists and that the provided Heroku API key has access to it.
 
 on:
   workflow_call:
     inputs:
       dyno-type:
-        type: string
         description: Heroku dyno type (web or worker)
-        required: false
         default: 'worker'
+        required: false
+        type: string
     secrets:
-      HEDIA_BOT_NPM_TOKEN:
+      NPM_TOKEN:
         required: true
       HEROKU_API_KEY:
+        required: true
+      GIT_CRYPT_KEY:
         required: true
 
 permissions:
@@ -24,12 +24,17 @@ permissions:
   packages: write
 
 jobs:
-  publish-and-deploy-docker-container:
-    if: github.event.pull_request.merged == true
+  publish-and-deploy-service:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
       
+      - name: Decrypt config
+        uses: sliteteam/github-action-git-crypt-unlock@1.1.0
+        env:
+          GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
+
       - name: Debug
         run: |
           echo ${{ github.event.repository.name }}
@@ -45,7 +50,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
       
-      - name: Login to Heroku registry
+      - name: Login to Heroku Container Registry
         uses: docker/login-action@v1
         with:
           registry: registry.heroku.com
@@ -60,7 +65,7 @@ jobs:
         shell: bash
       
       - name: Create tag
-        uses: actions/github-script@v3
+        uses: actions/github-script@v4
         with:
           github-token: ${{ github.token }}
           script: |
@@ -75,7 +80,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           build-args: |
-            NPM_TOKEN=${{ secrets.HEDIA_BOT_NPM_TOKEN }}
+            NPM_TOKEN=${{ secrets.NPM_TOKEN }}
             BUILD_VERSION=${{ steps.package-version.outputs.version }}
           context: .
           push: true

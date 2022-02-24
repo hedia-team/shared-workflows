@@ -1,4 +1,4 @@
-name: Create release
+name: Create GitHub release including release notes
 
 on:
   workflow_call:
@@ -16,7 +16,7 @@ jobs:
       # Fetch history (including tags) from within shallow clone.
       - run: git fetch --prune --unshallow
 
-      - name: Get most recent git tag
+      - name: Get most recent Git tag
         id: most-recent-git-tag
         run: |
           echo "::set-output name=mostRecentGitTag::`echo $(git describe --abbrev=0)`"
@@ -25,7 +25,7 @@ jobs:
         id: create-release-changelog
         uses: mikepenz/release-changelog-builder-action@v2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         # Uncomment if release notes should be edited before release creation.
         # with:
         #   outputFile: .github/release-notes.md
@@ -38,4 +38,4 @@ jobs:
           # Uncomment if release notes should be edited before release creation.
           # body_path: .github/release-notes.md
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
