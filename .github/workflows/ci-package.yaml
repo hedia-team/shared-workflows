@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: '16.13.2'
+  ENV_FILE: .env
 
 jobs:
   # Determine if the following CI steps should be skipped due to autobump commit.
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       skip: ${{ steps.ci-skip.outputs.ci-skip }}
-      
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -46,7 +46,7 @@ jobs:
           any_of: feature,fix,test
           one_of: major,minor,patch
           repo_token: ${{ github.token }}
-  
+
   # Run linting, build, and tests.
   lint-build-test:
     needs: [validate-pr-labels]
@@ -55,6 +55,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Load .env file
+        run: cat ${{ env.ENV_FILE }} >> $GITHUB_ENV
 
       - uses: actions/setup-node@v2
         with:
@@ -71,7 +74,7 @@ jobs:
       - run: npm run lint
       - run: npm run tsc
       - run: npm run test
-      
+
   # Bump version (if needed) & publish alpha package.
   bump-version-and-publish-alpha:
     needs: [lint-build-test]
