@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  validate-version-tags:
+  validate-package-version-and-git-tag:
     if: startsWith(github.head_ref, 'release/')
   
     runs-on: ubuntu-latest
