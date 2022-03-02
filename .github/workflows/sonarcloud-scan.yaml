@@ -1,0 +1,30 @@
+name: SonarCloud Scan
+
+on:
+  workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        required: true
+
+permissions:
+  pull-requests: read
+  contents: read
+
+concurrency:
+  group: sonar-cloud-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  sonarcloud-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Disabling shallow clone is recommended for improving relevancy of reporting.
+      
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # Needed to get PR information, if any.
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
