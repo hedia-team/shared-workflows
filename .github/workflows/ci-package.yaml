@@ -87,11 +87,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ secrets.GITHUB_PAT }}
 
+      # Documentation: https://hedia.atlassian.net/wiki/spaces/DT/pages/2118811649/npm+packages+-+workflow+alpha+auto-publishing
       - name: Bump version and publish alpha package to npm
         uses: hedia-team/autobump-and-publish@master
         with:
           github-token: ${{ secrets.GITHUB_PAT }}
           npm-token: ${{ secrets.NPM_TOKEN }}
           node-version: ${{ env.NODE_VERSION }}
+          # Defines type (major, minor, patch) of version bump.
           label: ${{ toJson(github.event.pull_request.labels.*.name) }}
+          # Needed in order to remove comments from the PR, to avoid multiple 'Successfully published new version' comments.
           issue-number: ${{ github.event.number }}
