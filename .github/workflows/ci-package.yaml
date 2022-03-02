@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 env:
-  ENV_FILE: .env
+  NODE_VERSION: '16.14.0'
 
 jobs:
   # Determine if the following CI steps should be skipped due to autobump commit.
@@ -55,9 +55,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Load .env file
-        run: cat ${{ env.ENV_FILE }} >> $GITHUB_ENV
 
       - uses: actions/setup-node@v2
         with:

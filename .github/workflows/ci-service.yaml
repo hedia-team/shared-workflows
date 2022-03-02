@@ -7,7 +7,7 @@ on:
         required: true
 
 env:
-  ENV_FILE: .env
+  NODE_VERSION: '16.14.0'
 
 jobs:
   build:
@@ -15,9 +15,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Load .env file
-        run: cat ${{ env.ENV_FILE }} >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
