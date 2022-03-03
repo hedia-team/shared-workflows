@@ -13,9 +13,6 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: '16.13.2'
-
-env:
   NODE_VERSION: '16.14.0'
 
 jobs:
