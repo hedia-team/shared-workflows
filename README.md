@@ -46,6 +46,10 @@ on:
     * `npm run test`
   * Publish package to npm as an _alpha release_ using our [bumper/publisher action](https://github.com/hedia-team/autobump-and-publish).
 
+  > If the workflow was triggered by a new commit containing `Version autobumped to` on the message, it'll be skipped since that commit was automatically produced in order to bump package version
+
+
+
 #### `publish-release-package.yaml`: 
 
 * **When should be triggered:** 
@@ -56,4 +60,4 @@ on:
       - master
     types: [closed]
 ```
-* **Purpose:** Publish package to npm as an the _disributed version_ using our [bumper/publisher action](https://github.com/hedia-team/autobump-and-publish).
+* **Purpose:** Publish package to npm as the _distributed version_ using our [bumper/publisher action](https://github.com/hedia-team/autobump-and-publish).
