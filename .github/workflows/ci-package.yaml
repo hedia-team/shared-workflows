@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: '16.13.2'
+  NODE_VERSION: '16.14.0'
 
 jobs:
   # Determine if the following CI steps should be skipped due to autobump commit.
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       skip: ${{ steps.ci-skip.outputs.ci-skip }}
-      
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -46,7 +46,7 @@ jobs:
           any_of: feature,fix,test
           one_of: major,minor,patch
           repo_token: ${{ github.token }}
-  
+
   # Run linting, build, and tests.
   lint-build-test:
     needs: [validate-pr-labels]
@@ -71,7 +71,7 @@ jobs:
       - run: npm run lint
       - run: npm run tsc
       - run: npm run test
-      
+
   # Bump version (if needed) & publish alpha package.
   bump-version-and-publish-alpha:
     needs: [lint-build-test]
@@ -84,11 +84,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ secrets.GITHUB_PAT }}
 
+      # Documentation: https://hedia.atlassian.net/wiki/spaces/DT/pages/2118811649/npm+packages+-+workflow+alpha+auto-publishing
       - name: Bump version and publish alpha package to npm
         uses: hedia-team/autobump-and-publish@master
         with:
           github-token: ${{ secrets.GITHUB_PAT }}
           npm-token: ${{ secrets.NPM_TOKEN }}
           node-version: ${{ env.NODE_VERSION }}
+          # Defines type (major, minor, patch) of version bump.
           label: ${{ toJson(github.event.pull_request.labels.*.name) }}
+          # Needed in order to remove comments from the PR, to avoid multiple 'Successfully published new version' comments.
           issue-number: ${{ github.event.number }}

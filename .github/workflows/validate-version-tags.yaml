@@ -1,6 +1,7 @@
 name: Validate package.json version field and Git tag
 
 on:
+  # Should be called when a PR from 'release/*' to 'master' is opened or reopened.
   workflow_call:
 
 permissions:
@@ -8,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  validate-version-tags:
+  validate-package-version-and-git-tag:
     runs-on: ubuntu-latest
 
     steps:
