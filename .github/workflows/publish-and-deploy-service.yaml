@@ -89,5 +89,6 @@ jobs:
         run: |
           appID=hedia-${{ github.event.repository.name }}-staging
           heroku container:release ${{ inputs.dyno-type }} -a $appID
+          heroku ps:scale ${{ inputs.dyno-type}}=1 -a $appID
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
