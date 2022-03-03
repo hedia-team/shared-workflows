@@ -1,4 +1,4 @@
-name: Create release
+name: Create GitHub release including release notes
 
 on:
   workflow_call:
@@ -18,7 +18,7 @@ jobs:
       # Fetch history (including tags) from within shallow clone.
       - run: git fetch --prune --unshallow
 
-      - name: Get most recent git tag
+      - name: Get most recent Git tag
         id: most-recent-git-tag
         run: |
           echo "::set-output name=mostRecentGitTag::`echo $(git describe --abbrev=0)`"
