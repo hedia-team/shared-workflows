@@ -31,6 +31,7 @@ jobs:
         id: get-version
         run: |
           echo ::set-output name=version::"${{ fromJson(steps.get-package-json.outputs.packageJson).version }}"
+          echo "Got package.json version: ${{ steps.get-version.outputs.version }}"
 
       - name: Validate version format
         run: |
@@ -46,7 +47,7 @@ jobs:
       - name: Validate Git tag format
         run: |
           if [[ ${{ steps.most-recent-git-tag.outputs.mostRecentGitTag }} != v${{ steps.get-version.outputs.version }} ]]; then
-            echo "Most recent Git tag must == 'v$version'." && exit 1
+            echo "Most recent Git tag must == 'v${{ steps.get-version.outputs.version }}'." && exit 1
           fi
         env:
           version: ${{ steps.get-version.outputs.version }}
