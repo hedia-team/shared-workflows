@@ -31,7 +31,7 @@ jobs:
         id: get-version
         run: |
           echo ::set-output name=version::"${{ fromJson(steps.get-package-json.outputs.packageJson).version }}"
-          echo "Got package.json version: ${{ steps.get-version.outputs.version }}"
+          echo "package.json version: ${{ fromJson(steps.get-package-json.outputs.packageJson).version }}"
 
       - name: Validate version format
         run: |
@@ -43,6 +43,7 @@ jobs:
         id: most-recent-git-tag
         run: |
           echo "::set-output name=mostRecentGitTag::`echo $(git describe --abbrev=0)`"
+          echo "Most recent Git tag: $(git describe --abbrev=0)"
 
       - name: Validate Git tag format
         run: |
