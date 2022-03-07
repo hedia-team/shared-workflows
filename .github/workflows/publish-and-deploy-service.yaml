@@ -1,22 +1,22 @@
 name: Publish and deploy Hedia service
-# Build and publish docker image to ghcr.io and Heroku registry,
-# and deploys container to Heroku app.
-# Assumes that a Heroku app named hedia-{repository}-staging exists,
-# and which the provided Heroku API key have access to.
+# Builds and publishes Docker image to ghcr.io and Heroku Container Registry, and deploys container to Heroku app.
+# Assumes that a Heroku app named 'hedia-{repository}-staging' exists, and which the provided Heroku API key has access to.
 
 on:
   workflow_call:
+    inputs:
+      dyno-type:
+        description: Heroku dyno type (web or worker)
+        default: 'worker'
+        required: false
+        type: string
     secrets:
       NPM_TOKEN:
         required: true
       HEROKU_API_KEY:
         required: true
-    inputs:
-      dyno-type:
-        type: string
-        description: Heroku dyno type (web or worker)
-        required: false
-        default: "worker"
+      GIT_CRYPT_KEY:
+        required: true
 
 permissions:
   pull-requests: read
@@ -24,12 +24,16 @@ permissions:
   packages: write
 
 jobs:
-  publish-and-deploy-docker-container:
-    if: github.event.pull_request.merged == true
+  publish-and-deploy-service:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      
+      - name: Decrypt config
+        uses: sliteteam/github-action-git-crypt-unlock@1.1.0
+        env:
+          GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
 
       - name: Debug
         run: |
@@ -45,8 +49,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
-
-      - name: Login to Heroku registry
+      
+      - name: Login to Heroku Container Registry
         uses: docker/login-action@v1
         with:
           registry: registry.heroku.com
@@ -61,7 +65,7 @@ jobs:
         shell: bash
 
       - name: Create tag
-        uses: actions/github-script@v3
+        uses: actions/github-script@v4
         with:
           github-token: ${{ github.token }}
           script: |
