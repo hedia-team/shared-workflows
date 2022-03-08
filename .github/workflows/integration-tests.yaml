@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: '16.13.2'
+  NODE_VERSION: '16.14.0'
 
 jobs:
   run-integration-tests:
@@ -63,8 +63,8 @@ jobs:
       - name: Set npm access token
         run: npm config set '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
 
-      - run: npm ci
-      - run: npm run build
+      - run: npm ci --ignore-scripts
+      - run: npm run migration:run
       - run: npm run start:pm2
       - run: npm run integration-tests
       - run: npm run stop:pm2
