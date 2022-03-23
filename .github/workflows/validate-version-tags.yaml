@@ -1,6 +1,7 @@
 name: Validate package.json version field and Git tag
 
 on:
+  # Should be called when a PR from 'release/*' to 'master' is opened or reopened.
   workflow_call:
 
 permissions:
@@ -9,8 +10,6 @@ permissions:
 
 jobs:
   validate-package-version-and-git-tag:
-    if: startsWith(github.head_ref, 'release/')
-  
     runs-on: ubuntu-latest
 
     steps:
@@ -32,6 +31,7 @@ jobs:
         id: get-version
         run: |
           echo ::set-output name=version::"${{ fromJson(steps.get-package-json.outputs.packageJson).version }}"
+          echo "package.json version: ${{ fromJson(steps.get-package-json.outputs.packageJson).version }}"
 
       - name: Validate version format
         run: |
@@ -43,11 +43,12 @@ jobs:
         id: most-recent-git-tag
         run: |
           echo "::set-output name=mostRecentGitTag::`echo $(git describe --abbrev=0)`"
+          echo "Most recent Git tag: $(git describe --abbrev=0)"
 
       - name: Validate Git tag format
         run: |
           if [[ ${{ steps.most-recent-git-tag.outputs.mostRecentGitTag }} != v${{ steps.get-version.outputs.version }} ]]; then
-            echo "Most recent Git tag must == 'v$version'." && exit 1
+            echo "Most recent Git tag must == 'v${{ steps.get-version.outputs.version }}'." && exit 1
           fi
         env:
           version: ${{ steps.get-version.outputs.version }}

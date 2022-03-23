@@ -2,7 +2,7 @@
 name: Publish release version of package on npm
 
 on:
-  # Should be called when a PR is merged into master.
+  # Should be called when a PR is merged into 'master'.
   workflow_call:
     secrets:
       NPM_TOKEN:

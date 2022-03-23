@@ -1,0 +1,70 @@
+name: Integration tests
+
+on:
+  workflow_call:
+    inputs:
+      DB:
+        required: true
+        type: string
+    secrets:
+      NPM_TOKEN:
+        required: true
+      GIT_CRYPT_KEY:
+        required: true
+
+permissions:
+  pull-requests: read
+  contents: read
+
+env:
+  NODE_VERSION: '16.14.0'
+
+jobs:
+  run-integration-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      rabbit:
+        image: rabbitmq
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 30s
+          --health-timeout 30s
+          --health-retries 3
+      
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: ${{ inputs.DB }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Decrypt config
+        uses: sliteteam/github-action-git-crypt-unlock@1.1.0
+        env:
+          GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Set npm access token
+        run: npm config set '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
+
+      - run: npm ci --ignore-scripts
+      - run: npm run migration:run
+      - run: npm run start:pm2
+      - run: npm run integration-tests
+      - run: npm run stop:pm2
