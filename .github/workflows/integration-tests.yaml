@@ -64,6 +64,7 @@ jobs:
         run: npm config set '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
 
       - run: npm ci --ignore-scripts
+      - run: npm run build
       - run: npm run migration:run
       - run: npm run start:pm2
       - run: npm run integration-tests
