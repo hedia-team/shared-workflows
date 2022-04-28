@@ -97,9 +97,9 @@ jobs:
             ghcr.io/hedia-team/${{ github.event.repository.name }}:${{ steps.package-version.outputs.version }}
             registry.heroku.com/${{ env.HEROKU_APP_ID }}/${{ inputs.dyno-type }}
 
-      # - name: Deploy to staging
-      #   run: |
-      #     heroku container:release ${{ inputs.dyno-type }} -a ${{ env.HEROKU_APP_ID }}
-      #     heroku ps:scale ${{ inputs.dyno-type}}=1 -a ${{ env.HEROKU_APP_ID }}
-      #   env:
-      #     HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      - name: Deploy to staging
+        run: |
+          heroku container:release ${{ inputs.dyno-type }} -a ${{ env.HEROKU_APP_ID }}
+          heroku ps:scale ${{ inputs.dyno-type}}=1 -a ${{ env.HEROKU_APP_ID }}
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
