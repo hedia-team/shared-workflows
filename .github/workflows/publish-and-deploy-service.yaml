@@ -72,40 +72,34 @@ jobs:
           echo "HEROKU_APP_ID=${app_id}" >> $GITHUB_ENV
         shell: bash
 
-      - name: Test app ID
-        run: |
-          echo "test-${{ env.HEROKU_APP_ID }}"
+      - name: Create tag
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            github.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/v${{ steps.package-version.outputs.version }}",
+              sha: context.sha
+            })
 
-      # - name: Create tag
-      #   uses: actions/github-script@v4
-      #   with:
-      #     github-token: ${{ github.token }}
-      #     script: |
-      #       github.git.createRef({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         ref: "refs/tags/v${{ steps.package-version.outputs.version }}",
-      #         sha: context.sha
-      #       })
-
-      # - name: Build and push
-      #   uses: docker/build-push-action@v2
-      #   with:
-      #     build-args: |
-      #       NPM_TOKEN=${{ secrets.NPM_TOKEN }}
-      #       BUILD_VERSION=${{ steps.package-version.outputs.version }}
-      #     context: .
-      #     push: true
-      #     tags: |
-      #       ghcr.io/hedia-team/${{ github.event.repository.name }}:latest
-      #       ghcr.io/hedia-team/${{ github.event.repository.name }}:${{ steps.package-version.outputs.version }}
-      #       registry.heroku.com/hedia-${{ github.event.repository.name }}-staging/${{ inputs.dyno-type }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          build-args: |
+            NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+            BUILD_VERSION=${{ steps.package-version.outputs.version }}
+          context: .
+          push: true
+          tags: |
+            ghcr.io/hedia-team/${{ github.event.repository.name }}:latest
+            ghcr.io/hedia-team/${{ github.event.repository.name }}:${{ steps.package-version.outputs.version }}
+            registry.heroku.com/${{ env.HEROKU_APP_ID }}/${{ inputs.dyno-type }}
 
       # - name: Deploy to staging
       #   run: |
-
-      #     appID=hedia-${{ github.event.repository.name }}-stg
-      #     heroku container:release ${{ inputs.dyno-type }} -a $appID
-      #     heroku ps:scale ${{ inputs.dyno-type}}=1 -a $appID
+      #     heroku container:release ${{ inputs.dyno-type }} -a ${{ env.HEROKU_APP_ID }}
+      #     heroku ps:scale ${{ inputs.dyno-type}}=1 -a ${{ env.HEROKU_APP_ID }}
       #   env:
       #     HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
