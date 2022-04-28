@@ -68,7 +68,7 @@ jobs:
         run: |
           repo_name=${{ github.event.repository.name }}
           app_name="${repo_name/service/svc}"
-          app_id=hedia-${{ app_name }}-stg
+          app_id=hedia-${app_name}-stg
           echo "HEROKU_APP_ID=${app_id}" >> $GITHUB_ENV
         shell: bash
 
