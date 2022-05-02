@@ -11,14 +11,10 @@ on:
         required: false
         type: string
       version-type:
-        description: Version bump type
+        description: Version bump type (major|minor|patch)
         default: "patch"
         required: true
-        type: choice
-        options:
-          - major
-          - minor
-          - patch
+        type: string
     secrets:
       NPM_TOKEN:
         required: true
