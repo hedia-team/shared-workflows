@@ -10,7 +10,7 @@ on:
         default: "worker"
         required: false
         type: string
-      version:
+      version-type:
         description: Version bump type
         default: "patch"
         required: true
@@ -61,9 +61,9 @@ jobs:
           username: _
           password: ${{ secrets.HEROKU_API_KEY }}
 
-      - name: Bump version based on label
+      - name: Bump version based on input
         run: |
-          npm version patch
+          npm version ${{ inputs.version-type }}
           git push
 
       - name: Extract package version
