@@ -91,12 +91,12 @@ jobs:
         with:
           build-args: |
             NPM_TOKEN=${{ secrets.NPM_TOKEN }}
-            BUILD_VERSION=${{ steps.package-version.outputs.version }}
+            BUILD_VERSION=${{ env.SERVICE_VERSION }}
           context: .
           push: true
           tags: |
             ghcr.io/hedia-team/${{ github.event.repository.name }}:latest
-            ghcr.io/hedia-team/${{ github.event.repository.name }}:${{ steps.package-version.outputs.version }}
+            ghcr.io/hedia-team/${{ github.event.repository.name }}:${{ env.SERVICE_VERSION }}
             registry.heroku.com/${{ env.HEROKU_APP_ID }}/${{ inputs.dyno-type }}
 
       - name: Deploy to staging
