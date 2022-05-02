@@ -66,46 +66,42 @@ jobs:
           initialPackageJSON="$(sed -nE 's/^\s*"version": "([0-9]+.[0-9]+.[0-9]+).*?",$/\1/p' package.json)"
           echo "SERVICE_VERSION=${initialPackageJSON}" >> $GITHUB_ENV
 
-      - name: Test version
+      - name: Create tag
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            github.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/v${{ env.SERVICE_VERSION }}",
+              sha: context.sha
+            })
+
+      - name: Set app ID
         run: |
-          echo "${{ env.SERVICE_VERSION }}"
+          repo_name=${{ github.event.repository.name }}
+          app_name="${repo_name/service/svc}"
+          app_id=hedia-${app_name}-stg
+          echo "HEROKU_APP_ID=${app_id}" >> $GITHUB_ENV
+        shell: bash
 
-      # - name: Create tag
-      #   uses: actions/github-script@v4
-      #   with:
-      #     github-token: ${{ github.token }}
-      #     script: |
-      #       github.git.createRef({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         ref: "refs/tags/v${{ env.SERVICE_VERSION }}",
-      #         sha: context.sha
-      #       })
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          build-args: |
+            NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+            BUILD_VERSION=${{ steps.package-version.outputs.version }}
+          context: .
+          push: true
+          tags: |
+            ghcr.io/hedia-team/${{ github.event.repository.name }}:latest
+            ghcr.io/hedia-team/${{ github.event.repository.name }}:${{ steps.package-version.outputs.version }}
+            registry.heroku.com/${{ env.HEROKU_APP_ID }}/${{ inputs.dyno-type }}
 
-      # - name: Set app ID
-      #   run: |
-      #     repo_name=${{ github.event.repository.name }}
-      #     app_name="${repo_name/service/svc}"
-      #     app_id=hedia-${app_name}-stg
-      #     echo "HEROKU_APP_ID=${app_id}" >> $GITHUB_ENV
-      #   shell: bash
-
-      # - name: Build and push
-      #   uses: docker/build-push-action@v2
-      #   with:
-      #     build-args: |
-      #       NPM_TOKEN=${{ secrets.NPM_TOKEN }}
-      #       BUILD_VERSION=${{ steps.package-version.outputs.version }}
-      #     context: .
-      #     push: true
-      #     tags: |
-      #       ghcr.io/hedia-team/${{ github.event.repository.name }}:latest
-      #       ghcr.io/hedia-team/${{ github.event.repository.name }}:${{ steps.package-version.outputs.version }}
-      #       registry.heroku.com/${{ env.HEROKU_APP_ID }}/${{ inputs.dyno-type }}
-
-      # - name: Deploy to staging
-      #   run: |
-      #     heroku container:release ${{ inputs.dyno-type }} -a ${{ env.HEROKU_APP_ID }}
-      #     heroku ps:scale ${{ inputs.dyno-type}}=1 -a ${{ env.HEROKU_APP_ID }}
-      #   env:
-      #     HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      - name: Deploy to staging
+        run: |
+          heroku container:release ${{ inputs.dyno-type }} -a ${{ env.HEROKU_APP_ID }}
+          heroku ps:scale ${{ inputs.dyno-type}}=1 -a ${{ env.HEROKU_APP_ID }}
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
