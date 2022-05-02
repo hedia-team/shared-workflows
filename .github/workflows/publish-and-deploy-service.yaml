@@ -33,7 +33,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Set git identity
+        run: |
+          git config --global user.name "hedia-bot"
+          git config --global user.email "github-action@users.noreply.github.com"
 
       - name: Decrypt config
         uses: sliteteam/github-action-git-crypt-unlock@1.1.0
@@ -59,7 +68,8 @@ jobs:
 
       - name: Bump version based on input
         run: |
-          npm version ${{ inputs.version-type }} --git-tag-version=false
+          npm version ${{ inputs.version-type }}
+          git push
 
       - name: Extract package version
         run: |
