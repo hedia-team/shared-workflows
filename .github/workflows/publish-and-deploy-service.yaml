@@ -79,23 +79,12 @@ jobs:
         run: |
           npm version ${{ env.VERSION_TYPE }}
           git push
+          git push --tags
 
       - name: Extract package version
         run: |
           initialPackageJSON="$(sed -nE 's/^\s*"version": "([0-9]+.[0-9]+.[0-9]+).*?",$/\1/p' package.json)"
           echo "SERVICE_VERSION=${initialPackageJSON}" >> $GITHUB_ENV
-
-      - name: Create tag
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ github.token }}
-          script: |
-            github.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: "refs/tags/v${{ env.SERVICE_VERSION }}",
-              sha: context.sha
-            })
 
       - name: Set app ID
         run: |
