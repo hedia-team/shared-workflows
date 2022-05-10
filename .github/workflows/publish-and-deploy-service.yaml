@@ -39,6 +39,10 @@ jobs:
               *"patch"*) type="patch" ;;
               *"minor"*) type="minor" ;;
               *"major"*) type="major" ;;
+              *)
+                echo "Version type is not set"
+                exit 1
+                ;;
           esac
           echo "VERSION_TYPE=${type}" >> $GITHUB_ENV
 
