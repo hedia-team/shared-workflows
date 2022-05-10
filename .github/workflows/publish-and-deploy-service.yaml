@@ -44,9 +44,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3.0.2
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
 
       - name: Set git identity
         run: |
