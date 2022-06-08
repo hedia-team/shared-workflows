@@ -1,6 +1,8 @@
 name: Publish and deploy Hedia service
 # Builds and publishes Docker image to ghcr.io and Heroku Container Registry, and deploys container to Heroku app.
 # Assumes that a Heroku app named 'hedia-{repository}-stg' exists, and which the provided Heroku API key has access to.
+# It automatically bumps the version based on PR label (major|minor|patch). Note that this does not work when merging 
+# to a protected branch.
 
 on:
   workflow_call:
@@ -51,8 +53,8 @@ jobs:
 
       - name: Set git identity
         run: |
-          git config --global user.name "hedia-bot"
-          git config --global user.email "github-action@users.noreply.github.com"
+          git config --global user.name "HediaBot [bot]"
+          git config --global user.email "dev@hedia.co"
 
       - name: Decrypt config
         uses: sliteteam/github-action-git-crypt-unlock@1.1.0
