@@ -1,7 +1,7 @@
 name: Publish and deploy Hedia service
 # Builds and publishes Docker image to ghcr.io and Heroku Container Registry, and deploys container to Heroku app.
 # Assumes that a Heroku app named 'hedia-{repository}-stg' exists, and which the provided Heroku API key has access to.
-# It automatically bumps the version based on PR label (major|minor|patch). Note that this does not work when merging 
+# It automatically bumps the version based on PR label (major|minor|patch). Note that this does not work when merging
 # to a protected branch.
 
 on:
@@ -49,7 +49,7 @@ jobs:
           echo "VERSION_TYPE=${type}" >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3
 
       - name: Set git identity
         run: |
