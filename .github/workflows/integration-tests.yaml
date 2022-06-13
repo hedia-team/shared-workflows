@@ -48,7 +48,7 @@ jobs:
           - 5432:5432
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       
       - name: Decrypt config
         uses: sliteteam/github-action-git-crypt-unlock@1.1.0
