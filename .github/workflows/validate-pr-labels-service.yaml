@@ -15,4 +15,5 @@ jobs:
         uses: docker://agilepathway/pull-request-label-checker:latest
         with:
           any_of: feature,fix,test
+          one_of: major,minor,patch
           repo_token: ${{ github.token }}

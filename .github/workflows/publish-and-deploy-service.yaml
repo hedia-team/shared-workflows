@@ -1,6 +1,8 @@
 name: Publish and deploy Hedia service
 # Builds and publishes Docker image to ghcr.io and Heroku Container Registry, and deploys container to Heroku app.
-# Assumes that a Heroku app named 'hedia-{repository}-staging' exists, and which the provided Heroku API key has access to.
+# Assumes that a Heroku app named 'hedia-{repository}-stg' exists, and which the provided Heroku API key has access to.
+# It automatically bumps the version based on PR label (major|minor|patch). Note that this does not work when merging
+# to a protected branch.
 
 on:
   workflow_call:
@@ -9,6 +11,11 @@ on:
         description: Heroku dyno type (web or worker)
         default: "worker"
         required: false
+        type: string
+      version-type:
+        description: Version type (major|minor|patch). Can accept a list of labels, that contains a version type.
+        default: "patch"
+        required: true
         type: string
     secrets:
       NPM_TOKEN:
@@ -28,17 +35,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Set version type from possible list of labels
+        run: |
+          case ${{ inputs.version-type }} in
+              *"patch"*) type="patch" ;;
+              *"minor"*) type="minor" ;;
+              *"major"*) type="major" ;;
+              *)
+                echo "Version type is not set"
+                exit 1
+                ;;
+          esac
+          echo "VERSION_TYPE=${type}" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set git identity
+        run: |
+          git config --global user.name "HediaBot [bot]"
+          git config --global user.email "dev@hedia.co"
 
       - name: Decrypt config
         uses: sliteteam/github-action-git-crypt-unlock@1.1.0
         env:
           GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
-
-      - name: Debug
-        run: |
-          echo ${{ github.event.repository.name }}
-          echo ${{ inputs.dyno-type }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -57,12 +78,16 @@ jobs:
           username: _
           password: ${{ secrets.HEROKU_API_KEY }}
 
+      - name: Bump version based on input
+        run: |
+          npm version ${{ env.VERSION_TYPE }}
+          git push
+          git push --tags
+
       - name: Extract package version
-        id: package-version
         run: |
           initialPackageJSON="$(sed -nE 's/^\s*"version": "([0-9]+.[0-9]+.[0-9]+).*?",$/\1/p' package.json)"
-          echo ::set-output name=version::"$initialPackageJSON"
-        shell: bash
+          echo "SERVICE_VERSION=${initialPackageJSON}" >> $GITHUB_ENV
 
       - name: Set app ID
         run: |
@@ -72,29 +97,17 @@ jobs:
           echo "HEROKU_APP_ID=${app_id}" >> $GITHUB_ENV
         shell: bash
 
-      - name: Create tag
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ github.token }}
-          script: |
-            github.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: "refs/tags/v${{ steps.package-version.outputs.version }}",
-              sha: context.sha
-            })
-
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
           build-args: |
             NPM_TOKEN=${{ secrets.NPM_TOKEN }}
-            BUILD_VERSION=${{ steps.package-version.outputs.version }}
+            BUILD_VERSION=${{ env.SERVICE_VERSION }}
           context: .
           push: true
           tags: |
             ghcr.io/hedia-team/${{ github.event.repository.name }}:latest
-            ghcr.io/hedia-team/${{ github.event.repository.name }}:${{ steps.package-version.outputs.version }}
+            ghcr.io/hedia-team/${{ github.event.repository.name }}:${{ env.SERVICE_VERSION }}
             registry.heroku.com/${{ env.HEROKU_APP_ID }}/${{ inputs.dyno-type }}
 
       - name: Deploy to staging
